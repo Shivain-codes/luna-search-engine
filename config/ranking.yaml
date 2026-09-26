@@ -1,0 +1,178 @@
+# Ranking Configuration
+# BM25 parameters, field weights, PageRank parameters
+
+ranking:
+  # BM25 parameters
+  bm25:
+    # Term frequency saturation parameter (k1)
+    # Controls how quickly term frequency saturates
+    # Typical range: 1.2 - 2.0
+    k1: 1.5
+    # Length normalization parameter (b)
+    # Controls how much document length affects scoring
+    # 0 = no length normalization, 1 = full normalization
+    # Typical range: 0.5 - 0.8
+    b: 0.75
+    # IDF smoothing parameter
+    # Adds 1 to document frequency to avoid division by zero
+    idf_smoothing: 1.0
+    # Minimum term frequency to consider
+    min_term_freq: 1
+    # Maximum term frequency cap
+    max_term_freq: 1000
+
+  # Field weights for multi-field BM25
+  field_weights:
+    # Title field weight - highest importance
+    title: 3.0
+    # Heading field weight (h1, h2, h3 tags)
+    heading: 2.0
+    # Body content weight
+    body: 1.0
+    # Anchor text weight (inbound link text)
+    anchor: 1.5
+    # Meta description weight
+    meta_description: 1.2
+    # URL/Path weight
+    url: 0.8
+    # Structured data weight (JSON-LD, microdata)
+    structured_data: 1.3
+    # Image alt text weight
+    image_alt: 0.5
+
+  # Field length normalization
+  field_length_norm:
+    # Average field lengths for normalization (in tokens)
+    avg_field_length:
+      title: 8
+      heading: 12
+      body: 500
+      anchor: 6
+      meta_description: 25
+      url: 4
+      structured_data: 50
+      image_alt: 5
+    # Enable per-field length normalization
+    enabled: true
+
+  # PageRank parameters
+  pagerank:
+    # Damping factor (probability of following a link)
+    # Typical value: 0.85
+    damping_factor: 0.85
+    # Convergence threshold
+    # Iteration stops when max change < epsilon
+    epsilon: 0.0001
+    # Maximum iterations
+    max_iterations: 100
+    # Personalization vector (topic-sensitive PageRank)
+    # Empty = uniform personalization
+    personalization: {}
+    # Handle dangling nodes (pages with no outlinks)
+    # Options: "uniform", "remove", "self_loop"
+    dangling_node_handling: "uniform"
+    # Minimum PageRank score
+    min_score: 0.000001
+    # Score normalization
+    # Options: "none", "min_max", "z_score", "log"
+    normalization: "min_max"
+    # Update frequency (hours)
+    update_interval_hours: 24
+
+  # Combined scoring
+  scoring:
+    # Weight for BM25 score in final ranking
+    # Range: 0.0 - 1.0
+    bm25_weight: 0.7
+    # Weight for PageRank score in final ranking
+    # Range: 0.0 - 1.0
+    pagerank_weight: 0.2
+    # Weight for freshness/recency in final ranking
+    # Range: 0.0 - 1.0
+    freshness_weight: 0.1
+    # Freshness decay half-life (days)
+    freshness_half_life_days: 365
+    # Minimum score threshold for results
+    min_score_threshold: 0.001
+    # Score boosting for exact phrase matches
+    phrase_boost: 1.5
+    # Score boosting for prefix matches
+    prefix_boost: 1.2
+
+  # Query processing
+  query:
+    # Enable query expansion
+    expansion_enabled: true
+    # Maximum expansion terms
+    max_expansion_terms: 10
+    # Expansion method: "pseudo_relevance", "word2vec", "bert"
+    expansion_method: "pseudo_relevance"
+    # Minimum term IDF for expansion
+    min_expansion_idf: 2.0
+    # Stopword removal
+    remove_stopwords: true
+    # Stemming enabled
+    stemming_enabled: true
+    # Stemmer language
+    stemmer_language: "english"
+    # Minimum query term length
+    min_term_length: 2
+    # Maximum query term length
+    max_term_length: 50
+
+  # Result diversification
+  diversification:
+    # Enable result diversification
+    enabled: true
+    # Method: "mmr", "xquad", "pm2"
+    method: "mmr"
+    # MMR lambda parameter (0 = diversity only, 1 = relevance only)
+    mmr_lambda: 0.7
+    # Maximum results per domain
+    max_per_domain: 3
+    # Maximum results per host
+    max_per_host: 2
+
+  # Learning to rank (optional)
+  ltr:
+    # Enable learning to rank
+    enabled: false
+    # Model type: "lightgbm", "xgboost", "ranknet"
+    model_type: "lightgbm"
+    # Feature list
+    features:
+      - "bm25_score"
+      - "pagerank_score"
+      - "freshness_score"
+      - "url_depth"
+      - "domain_authority"
+      - "content_length"
+      - "title_match"
+      - "heading_match"
+      - "anchor_match"
+    # Model path
+    model_path: "/models/ltr/model.txt"
+    # Model update interval (hours)
+    update_interval_hours: 168
+
+  # Caching
+  cache:
+    # Enable query result caching
+    enabled: true
+    # Cache TTL (seconds)
+    ttl_seconds: 300
+    # Maximum cache entries
+    max_entries: 10000
+    # Cache warming queries
+    warmup_queries: []
+
+  # Logging and monitoring
+  logging:
+    # Log level: debug, info, warn, error
+    level: "info"
+    # Log ranking scores for top results
+    log_scores: true
+    # Log feature values for debugging
+    log_features: false
+    # Statistics interval (seconds)
+    stats_interval_seconds: 60

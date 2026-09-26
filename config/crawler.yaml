@@ -1,0 +1,141 @@
+# Crawler Configuration
+# Politeness settings, user agent, delays, concurrency limits, robots.txt cache TTL
+
+crawler:
+  # User agent string for identifying the crawler
+  user_agent: "SearchEngineBot/1.0 (+https://search.example.com/bot)"
+
+  # Politeness settings
+  politeness:
+    # Minimum delay between requests to the same domain (milliseconds)
+    min_delay_ms: 1000
+    # Maximum delay between requests to the same domain (milliseconds)
+    max_delay_ms: 5000
+    # Random jitter factor (0.0 - 1.0) added to delay
+    jitter_factor: 0.3
+    # Respect robots.txt crawl-delay directive
+    respect_crawl_delay: true
+    # Default crawl delay if not specified in robots.txt (seconds)
+    default_crawl_delay_seconds: 1
+
+  # Concurrency limits
+  concurrency:
+    # Maximum concurrent requests globally
+    max_global_concurrent: 50
+    # Maximum concurrent requests per domain
+    max_per_domain: 5
+    # Maximum concurrent requests per IP
+    max_per_ip: 10
+    # Queue size for pending URLs
+    queue_size: 10000
+
+  # Request timeouts
+  timeouts:
+    # Connection timeout (seconds)
+    connect_timeout_seconds: 10
+    # Read timeout (seconds)
+    read_timeout_seconds: 30
+    # Total request timeout (seconds)
+    total_timeout_seconds: 60
+    # DNS lookup timeout (seconds)
+    dns_timeout_seconds: 5
+
+  # Robots.txt cache settings
+  robots_txt:
+    # Cache TTL for robots.txt (seconds)
+    cache_ttl_seconds: 3600
+    # Maximum cache entries
+    max_cache_entries: 10000
+    # Cache cleanup interval (seconds)
+    cleanup_interval_seconds: 300
+    # User agent to check in robots.txt
+    user_agent: "SearchEngineBot"
+
+  # Retry settings
+  retry:
+    # Maximum retry attempts
+    max_retries: 3
+    # Base delay for exponential backoff (milliseconds)
+    base_delay_ms: 1000
+    # Maximum delay for retries (milliseconds)
+    max_delay_ms: 30000
+    # Retry on these HTTP status codes
+    retry_on_status: [429, 500, 502, 503, 504]
+    # Retry on these error types
+    retry_on_errors: ["timeout", "connection_reset", "dns_error"]
+
+  # Content handling
+  content:
+    # Maximum response body size (bytes)
+    max_body_size_bytes: 10485760  # 10MB
+    # Maximum HTML parsing size (bytes)
+    max_html_size_bytes: 5242880   # 5MB
+    # Allowed content types
+    allowed_content_types:
+      - "text/html"
+      - "application/xhtml+xml"
+      - "application/xml"
+      - "text/xml"
+    # Follow redirects
+    follow_redirects: true
+    # Maximum redirect hops
+    max_redirects: 10
+
+  # URL filtering
+  url_filter:
+    # Allowed URL schemes
+    allowed_schemes: ["http", "https"]
+    # Blocked domains (exact match or wildcard)
+    blocked_domains: []
+    # Blocked URL patterns (regex)
+    blocked_patterns:
+      - ".*\\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|tar|gz)$"
+      - ".*\\?(utm_|fbclid|gclid)="
+    # Allowed domains (if set, only these domains are crawled)
+    allowed_domains: []
+
+  # Sitemap handling
+  sitemap:
+    # Enable sitemap discovery
+    enabled: true
+    # Maximum sitemap file size (bytes)
+    max_size_bytes: 52428800  # 50MB
+    # Maximum URLs per sitemap
+    max_urls: 50000
+    # Sitemap cache TTL (seconds)
+    cache_ttl_seconds: 86400
+
+  # Crawl scheduling
+  scheduling:
+    # Enable priority-based scheduling
+    priority_enabled: true
+    # Default priority for new URLs
+    default_priority: 0.5
+    # Priority boost for sitemap URLs
+    sitemap_priority_boost: 0.2
+    # Priority decay per crawl depth
+    depth_penalty: 0.1
+    # Maximum crawl depth
+    max_depth: 10
+
+  # Logging
+  logging:
+    # Log level: debug, info, warn, error
+    level: "info"
+    # Log request/response details
+    log_requests: false
+    # Log robots.txt decisions
+    log_robots: true
+    # Log crawl statistics interval (seconds)
+    stats_interval_seconds: 60
+
+  # Storage
+  storage:
+    # Visited URLs bloom filter size (bits)
+    bloom_filter_bits: 100000000
+    # Visited URLs expected insertions
+    bloom_filter_expected: 10000000
+    # Checkpoint interval (seconds)
+    checkpoint_interval_seconds: 300
+    # Checkpoint directory
+    checkpoint_dir: "/data/crawler/checkpoints"

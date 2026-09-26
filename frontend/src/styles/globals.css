@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light Mode Tokens */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border-default: #e2e8f0;
+  --border-muted: #f1f5f9;
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.dark {
+  /* Dark Mode Tokens */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+
+  --border-default: #334155;
+  --border-muted: #1e293b;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .container-padded {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .glass {
+    @apply backdrop-blur-xl bg-white/70 dark:bg-black/70 border border-white/20 dark:border-white/10;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 rounded-full bg-blue-600 text-white font-medium transition-all duration-200 hover:bg-blue-700 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 font-medium transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95;
+  }
+
+  .card {
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm;
+  }
+}

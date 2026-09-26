@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Databases (never commit local data)
+*.db
+nexus.db
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# Editor / OS
+.DS_Store
+*.dSYM/
+.vscode/
+.idea/
+
+# uv lockfile is environment-specific here
+uv.lock
+
+# Unrelated vendored checkout (not part of this project)
+pandas/

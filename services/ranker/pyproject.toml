@@ -1,0 +1,24 @@
+[project]
+name = "luna-ranker"
+version = "0.1.0"
+description = "Ranker service for Luna (BM25, PageRank)"
+requires-python = ">=3.13"
+dependencies = [
+    "luna-shared",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.4.0",
+    "httpx>=0.27.0",
+]
+
+[build-system]
+requires = ["setuptools>=70.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ranker*"]
+
+[tool.uv.sources]
+luna-shared = { path = "../../shared/python", editable = true }

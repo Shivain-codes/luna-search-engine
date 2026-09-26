@@ -1,0 +1,60 @@
+[project]
+name = "nexussearch-workspace"
+version = "0.1.0"
+description = "Luna monorepo dev environment"
+requires-python = ">=3.13"
+dependencies = [
+    "luna-shared",
+    "luna-search-api",
+    "luna-ranker",
+    "luna-indexer",
+    "luna-crawler",
+    "luna-admin-api",
+    "luna-api-gateway",
+    "greenlet>=3.5.5",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "hypothesis>=6.100.0",
+    "ruff>=0.5.0",
+]
+
+[tool.uv.sources]
+luna-shared = { path = "shared/python", editable = true }
+luna-search-api = { path = "services/search-api", editable = true }
+luna-ranker = { path = "services/ranker", editable = true }
+luna-indexer = { path = "services/indexer", editable = true }
+luna-crawler = { path = "services/crawler", editable = true }
+luna-admin-api = { path = "services/admin-api", editable = true }
+luna-api-gateway = { path = "services/api-gateway", editable = true }
+
+[build-system]
+requires = ["setuptools>=70.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore:.*HMAC key.*:UserWarning",
+    "ignore::UserWarning",
+]
+markers = ["property: property-based tests (hypothesis)"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "W"]
+# UP042: str+Enum is intentional for JSON-serializable role/permission values.
+ignore = ["E501", "UP042"]

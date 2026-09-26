@@ -1,0 +1,14 @@
+[
+  {
+    "query": "python programming",
+    "expected_doc_id": "some-real-doc-id-1"
+  },
+  {
+    "query": "machine learning",
+    "expected_doc_id": "some-real-doc-id-2"
+  },
+  {
+    "query": "search engine",
+    "expected_doc_id": "some-real-doc-id-3"
+  }
+]

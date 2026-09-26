@@ -1,0 +1,8 @@
+# Synonym groups for query expansion
+# Each group is a list of terms that should be treated as interchangeable (OR logic)
+groups:
+  - ["laptop", "notebook", "portable computer"]
+  - ["fast", "quick", "rapid", "speedy"]
+  - ["search engine", "web search", "information retrieval"]
+  - ["python", "pyton", "pythno"] # Common typos as synonyms
+  - ["machine learning", "ml", "artificial intelligence", "ai"]

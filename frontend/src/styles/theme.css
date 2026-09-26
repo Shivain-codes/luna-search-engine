@@ -1,0 +1,13 @@
+:root {
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+}
+
+.dark {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-accent: #4ade80;
+  --color-accent-hover: #86efac;
+}

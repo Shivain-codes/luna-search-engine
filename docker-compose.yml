@@ -1,0 +1,217 @@
+name: luna
+
+x-service-build: &service-build
+  context: .
+  dockerfile: Dockerfile
+
+x-common-env: &common-env
+  DATABASE_URL: postgresql://luna:${DB_PASSWORD:-lunapass}@postgres:5432/luna
+  REDIS_URL: redis://redis:6379
+  RABBITMQ_URL: amqp://luna:${RABBITMQ_PASSWORD:-lunapass}@rabbitmq:5672
+  JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-in-production-0001}
+  ENVIRONMENT: ${ENVIRONMENT:-development}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: luna
+      POSTGRES_USER: luna
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lunapass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U luna -d luna"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: luna
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-lunapass}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  tor:
+    image: alpine
+    command: >
+      sh -c "apk add --no-cache tor &&
+             sed -i 's/SafeLog 1/SafeLog 0/' /etc/tor/torrc &&
+             tor"
+    ports:
+      - "9050:9050"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9050"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # One-shot migration gate. Application services wait for this to succeed.
+  migrate:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: search-api
+    command: ["python", "/app/scripts/migrate.py"]
+    environment:
+      <<: *common-env
+    volumes:
+      - ./migrations:/app/migrations:ro
+      - ./scripts:/app/scripts:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  ranker:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: ranker
+        PORT: 8004
+    command: ["python", "-m", "ranker.main"]
+    environment:
+      <<: *common-env
+    ports:
+      - "8004:8004"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  search-api:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: search-api
+        PORT: 8001
+    command: ["python", "-m", "search_api.main"]
+    environment:
+      <<: *common-env
+      RANKING_API_URL: http://ranker:8004
+    ports:
+      - "8001:8001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      ranker:
+        condition: service_started
+
+  indexer:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: indexer
+        PORT: 8003
+    command: ["python", "-m", "indexer.main"]
+    environment:
+      <<: *common-env
+    ports:
+      - "8003:8003"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+
+  crawler:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: crawler
+        PORT: 8002
+    command: ["python", "-m", "crawler.main"]
+    environment:
+      <<: *common-env
+      TOR_PROXY: "socks5://tor:9050"
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./config:/app/config:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      tor:
+        condition: service_healthy
+
+  admin-api:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: admin-api
+        PORT: 8005
+    command: ["python", "-m", "admin_api.main"]
+    environment:
+      <<: *common-env
+    ports:
+      - "8005:8005"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api-gateway:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: api-gateway
+        PORT: 8000
+    command: ["python", "-m", "api_gateway.main"]
+    environment:
+      <<: *common-env
+      SEARCH_API_URL: http://search-api:8001
+      ADMIN_API_URL: http://admin-api:8005
+    ports:
+      - "8000:8000"
+    depends_on:
+      search-api:
+        condition: service_started
+      admin-api:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    depends_on:
+      - api-gateway
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  default:
+    name: luna-network
